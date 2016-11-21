@@ -21,7 +21,7 @@ def save_text(filename, string):
         file.write(string)
 
 
-def get_bigrams_frequency(string, step=1, sort=True):
+def get_bg_freq(string, step=1, sort=True):
     f_dict = {}
 
     for i in range(0, len(string) - 1, step):
@@ -89,7 +89,7 @@ def solve_linear_comparison(a, b, m):
     if a_inv:
         return [(a_inv * b) % m]
 
-    elif not b % d:
+    if not b % d:
         a, b, m = a / d, b / d, m / d
         x0 = (b * get_inverse(a, m)[1]) % m
         return [int(x0 + (i - 1) * m) for i in range(1, d + 1)]
@@ -173,10 +173,9 @@ def gnc_keys(string, f_size=5, check_bw=False):
     :param string: CT (str)
     :param f_size: number of frequently used bigrams of CT, which will generate the keys
     :param check_bw: ask whether to save the text which passed the test (bool)
-    :return: None
     """
 
-    f_list = get_bigrams_frequency(string)[:f_size]
+    f_list = get_bg_freq(string)[:f_size]
 
     for i in permutations(MOST_FREQUENTLY_BIGRAMS, 2):
         for j in range(len(f_list) - 1):
@@ -189,7 +188,7 @@ def gnc_keys(string, f_size=5, check_bw=False):
                 key = (solution, get_key2(i[0], f_list[j][0], solution))
                 d_text = decrypt_from_affinity_sub(string, key)
 
-                if check_text_correctness(Counter(d_text), get_bigrams_frequency(d_text, sort=False), len(d_text)):
+                if check_text_correctness(Counter(d_text), get_bg_freq(d_text, sort=False), len(d_text)):
                     if check_bw:
                         print(d_text[:40])
                         answer = input('Save text (yes/no)? ')
