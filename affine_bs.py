@@ -6,7 +6,7 @@ from math import log2
 from time import time
 
 ALPHABET = 'абвгдежзийклмнопрстуфхцчшщьыэюя'
-MOST_FREQUENTLY_BIGRAMS = ('ст', 'но', 'то', 'на', 'ен')
+MOST_FREQUENT_BIGRAMS = 'ст', 'но', 'то', 'на', 'ен'
 
 
 def open_text(filename):
@@ -30,10 +30,7 @@ def get_bg_freq(string, step=1, sort=True):
         else:
             f_dict[string[i] + string[i + 1]] = 1
 
-    if not sort:
-        return f_dict
-
-    return sorted(f_dict.items(), key=lambda x: (x[1], x[0]), reverse=True)
+    return sorted(f_dict.items(), key=lambda x: (x[1], x[0]), reverse=True) if sort else f_dict
 
 
 def gcd(b, n):
@@ -69,7 +66,7 @@ def get_inverse(a, b):
     return d, None
 
 
-def get_entropy(f_list, power, n=1):
+def entropy(f_list, power, n=1):
     return -sum({i: f_list[i] / power * log2(f_list[i] / power) for i in f_list}.values()) / n
 
 
@@ -144,10 +141,10 @@ def check_text_correctness(f_list_s, f_list_big, text_len):
     :return: bool
     """
 
-    return get_entropy(f_list_s, text_len) < 4.5 and get_entropy(f_list_big, text_len, n=2) < 4.2
+    return entropy(f_list_s, text_len) < 4.5 and entropy(f_list_big, text_len, n=2) < 4.2
 
 
-def decrypt_from_affinity_sub(string, key):
+def decrypt(string, key):
     """
     Decrypt text with a certain key
 
@@ -177,7 +174,7 @@ def gnc_keys(string, f_size=5, check_bw=False):
 
     f_list = get_bg_freq(string)[:f_size]
 
-    for i in permutations(MOST_FREQUENTLY_BIGRAMS, 2):
+    for i in permutations(MOST_FREQUENT_BIGRAMS, 2):
         for j in range(len(f_list) - 1):
             key_1 = get_key1(i[0], i[1], f_list[j][0], f_list[j + 1][0])
 
@@ -185,8 +182,8 @@ def gnc_keys(string, f_size=5, check_bw=False):
                 continue
 
             for solution in key_1:
-                key = (solution, get_key2(i[0], f_list[j][0], solution))
-                d_text = decrypt_from_affinity_sub(string, key)
+                key = solution, get_key2(i[0], f_list[j][0], solution)
+                d_text = decrypt(string, key)
 
                 if check_text_correctness(Counter(d_text), get_bg_freq(d_text, sort=False), len(d_text)):
                     if check_bw:
